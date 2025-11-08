@@ -1,35 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import questions from "./questions.json";
+import type { Questions } from "./Types";
+import StatBar from "./components/StatBar";
+import QuestionComponent from "./components/QuestionComponent";
+import Reset from "./components/Reset";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const allQuestions = questions as Questions;
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [incorrectAnswers, setIncorrectAnswers] = useState(0);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [advance, setAdvance] = useState(false);
+
+  const onSubmit = (correct: boolean) => {
+    setAdvance(true);
+    if (correct) setCorrectAnswers((prev) => prev + 1);
+    else setIncorrectAnswers((prev) => prev + 1);
+  };
+
+  const reset = () => {
+    setCorrectAnswers(0);
+    setIncorrectAnswers(0);
+    setCurrentQuestionIdx(0);
+  };
+
+  if (currentQuestionIdx >= allQuestions.questions.length) {
+    return (
+      <Reset
+        totalQuestions={allQuestions.questions.length}
+        correctQuestions={correctAnswers}
+        onPress={reset}
+      ></Reset>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container">
+      <StatBar
+        currentQuestion={currentQuestionIdx + 1}
+        totalQuestions={allQuestions.questions.length}
+        correct={correctAnswers}
+        incorrect={incorrectAnswers}
+      ></StatBar>
+
+      <QuestionComponent
+        question={allQuestions.questions[currentQuestionIdx]}
+        onSubmit={onSubmit}
+      ></QuestionComponent>
+
+      {advance && (
+        <button
+          className="next-question"
+          onClick={() => setCurrentQuestionIdx((prev) => prev + 1)}
+        >
+          Next Question ...
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
